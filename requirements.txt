@@ -1,0 +1,9 @@
+flask
+amazon.api
+operator
+lxml
+re
+requests
+json
+random
+flask_cors
