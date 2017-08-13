@@ -56,17 +56,29 @@ def searchEbay(searchFor,num) :
 
 def searchAliExpress(searchFor,num) :
 
+	print ("in")
 	Items = [];
-	URL = "https://www.aliexpress.com/wholesale?SearchText=" + searchFor 
+	URL = "https://www.aliexpress.com/wholesale?ltype=wholesale&d=y&origin=y&blanktest=0&SearchText=" + searchFor 
+	print (URL)
 	page = requests.get(URL)
 	tree = html.fromstring(page.content)
 	isRes =  tree.xpath('//strong[@class="search-count"]/text()')[0]
 	if int(isRes.replace(",", "")) == 0:
 		return Items;
 	Titles = tree.xpath('//a[@class="history-item product "]/@title')
-	items = tree.xpath('//a[@class="atwl-button "]/@data-product-id')
+	itemsTmp = tree.xpath('//a[@class="history-item product "]/@href')
+	print (itemsTmp)
+	items = []
+	j = 0
+	for i in itemsTmp :
+		items.insert(j, re.search('([0-9]+)\.html', i).group(0))
+		j+=1
 	prices = tree.xpath('//span[@itemprop="price"]/text()')    
 	images = re.findall('.*src="(.+jpg)\".*',page.content)
+
+	print (items)
+
+
 
 	i = 0
 	for item in items: 
@@ -91,6 +103,7 @@ def api_article():
 	amazon = request.args.get('amazon');
 	aliexpress = request.args.get('aliexpress');
 
+	print ("ali:" + aliexpress)
 	if amazon == "true":
 		items.extend(searchAmazon(search,12));
 	if ebay == "true":
