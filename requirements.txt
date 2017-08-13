@@ -1,5 +1,5 @@
 flask
-amazon.api
+python-amazon-simple-product-api
 operator
 lxml
 re
