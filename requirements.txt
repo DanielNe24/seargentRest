@@ -1,7 +1,6 @@
 flask
 python-amazon-simple-product-api
-lxml
-re
+py27-lxml
 requests
 json
 random
