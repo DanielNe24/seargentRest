@@ -5,3 +5,4 @@ requests
 flask_cors
 Lxml
 gunicorn
+ebaysdk

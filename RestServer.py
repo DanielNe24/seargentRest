@@ -7,13 +7,21 @@ import requests
 import json
 from random import shuffle
 from flask_cors import CORS
+from ebaysdk.finding import Connection as Finding
+
+_token = 'AgAAAA**AQAAAA**aAAAAA**N+sxWQ**nY+sHZ2PrBmdj6wVnY+sEZ2PrA2dj6AElYWoAJKEpwmdj6x9nY+seQ**U4sDAA**AAMAAA**Nwx+CW2wjUp7dWuYW5Sss13HGQSoMITtqMxP6T/WEUALcgDiJIKsmj99aaGTMoaYGXjiDRvTNZeNPa0J3RqqiKabKH+/40Cun3+FIXIc65st82mc38/zptnMcWojjjFNJKX5DuhZZVo76fIvGAPwtlurFwjQ9DSBp/KVvgu08mo8CLon1eaTeKK4aRscop6KcM0o3fmQyTDm5T28i4lgU0elr+iLQzTB4kO7oWwHbfoYU5AjOC3Gix4yWYfv2Aa/D8fgEi7Izxx85EZhPFuOxYcP5+5V51bL7xuA5Y5M9xxXR6vvbKVpsF6+OIohyTdcgJ+NPXDLNFRE9oidHedY0hg/bke6SYF/xg5FQGZVe2xUxnhs/yyo+C/tmW/ieZ/QvqYAdxkAN+3f6H0wg/yiGANbA7ifGXSO92hxW1dQk8j98BAwhwf15PxKWhd+T1VtND0YaVBTxbARTSQXOT2Ye/+Sz30Ur1hPYJfCUfZ338ws5hWci7hRwxqWLaDCBaE0Raqb8UUwE9LfmGiISJQZb+o8k85Pri4O0o5hJyWd+inYLyN7yh0iMDCPZHOkTKNd+X1vXyFbHyJZRs6oBz/hEnsc/iZ0/9h9asU1SZIlOdz8BlcUUu3yrtEpWT5rLiRAuMp7j8mPOvEbCXXpB00yTZk+2YLZ3RW/6bmFGED46mqU+qcZF3i1k9nqiJHcStBGbIhZowxYNal1XjE72gea7kiWwSstRaxKKowGbOWhwc0XrevPchkdVnYNoGDdpqo/'
+_appid = 'danielne-asindrop-PRD-245f6444c-0b329f66'
+_devid = '81cbe858-14b1-46a8-b58d-8d5d5d173752'
+_certid = 'PRD-45f6444c5133-3e3f-4dae-89de-94c6'
+confFile = 'myebay.yaml'
+api = Finding(appid=_appid, devid=_devid, certid=_certid, token=_token, debug=False, config_file=confFile) 
+amazon = AmazonAPI('AKIAIZRREBI4D4525X5A', 'xXUIW6s6IxRUCus6nRG92hkA49v7CEVBmbkm3R1p', 'asindropper-20')
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 def searchAmazon(searchFor,num) :
 	Items = [];	
-	amazon = AmazonAPI('AKIAIZRREBI4D4525X5A', 'xXUIW6s6IxRUCus6nRG92hkA49v7CEVBmbkm3R1p', 'asindropper-20')
 	try:
 		results = amazon.search_n( num , Keywords=searchFor , SearchIndex='All');	
 		for product in	results:
@@ -22,36 +30,20 @@ def searchAmazon(searchFor,num) :
 		return Items
 	except:
 		return [];
+
 def searchEbay(searchFor,num) :
- 	
- 	Items = [];	
-	URL = "http://www.ebay.com/sch/i.html?_from=R40&_sacat=0&_nkw=" + searchFor + "&rt=nc"
-	page = requests.get(URL)
-	tree = html.fromstring(page.content)
-	isRes =  tree.xpath('//span[@class="rcnt"]/text()')[0]
-	if int(isRes.replace(",", "")) == 0:
-		return Items;
-	Titles = tree.xpath('//h3[@class="lvtitle"]//a[@class="vip"]/text()')
-	items = re.findall('.*listingId="(.+?)\".*',page.content)
-	prices = tree.xpath('//li[@class="lvprice prc"]//span[@class="bold"]/text()')    
-	images = re.findall('.*src="(https://.+jpg)\".*',page.content)
-	fixPrices = []
 
+	Items = []
 	i = 0
-	for price in prices:
-		if '.' in price :
-			fixPrices.insert(i, price)
-			i+=1
+	response = api.execute('findItemsAdvanced', {'keywords': searchFor})
+	for itm in response.reply.searchResult.item:
 
-	i = 0
-	for item in items: 
-		if i == num:
+		if i == num :
 			return Items
-
-		Items.append([Titles[i],fixPrices[i].translate(None, '\t\n,$ '),images[i],"https://www.ebay.com/itm/" + item])
+		
+		Items.append([itm.title, itm.sellingStatus.currentPrice.value, itm.galleryURL,  itm.viewItemURL])
 		i+=1
-
-  
+	
  	return Items
 
 def searchAliExpress(searchFor,num) :
@@ -60,10 +52,6 @@ def searchAliExpress(searchFor,num) :
 	URL = "https://www.aliexpress.com/wholesale?ltype=wholesale&d=y&origin=y&blanktest=0&SearchText=" + searchFor 
 	page = requests.get(URL)
 	tree = html.fromstring(page.content)
-	#isRes = tree.xpath('//strong[@class="search-count"]/text()')[0]
-	#print (isRes)
-	#if int(isRes.replace(",", "")) == 0:
-	#	return Items;
 	Titles = tree.xpath('//a[@class="history-item product "]/@title')
 	itemsTmp = tree.xpath('//a[@class="history-item product "]/@href')
 	items = []
@@ -99,11 +87,11 @@ def api_article():
 	aliexpress = request.args.get('aliexpress');
 
 	if amazon == "true":
-		items.extend(searchAmazon(search,12));
+		items.extend(searchAmazon(search,4));
 	if ebay == "true":
-		items.extend(searchEbay(search,11))
+		items.extend(searchEbay(search,4))
 	if aliexpress == "true":
-		items.extend(searchAliExpress(search,11))
+		items.extend(searchAliExpress(search,4))
 	
 	itm = sorted(items, key=itemgetter(1))
 	shuffle(itm)
