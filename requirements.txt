@@ -4,3 +4,4 @@ python-amazon-simple-product-api
 requests
 flask_cors
 Lxml
+gunicorn

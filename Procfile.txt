@@ -1,1 +1,1 @@
-web: python RestServer.py
+web: gunicorn RestServer:app
