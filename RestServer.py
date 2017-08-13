@@ -67,7 +67,6 @@ def searchAliExpress(searchFor,num) :
 		return Items;
 	Titles = tree.xpath('//a[@class="history-item product "]/@title')
 	itemsTmp = tree.xpath('//a[@class="history-item product "]/@href')
-	print (itemsTmp)
 	items = []
 	j = 0
 	for i in itemsTmp :
@@ -75,10 +74,6 @@ def searchAliExpress(searchFor,num) :
 		j+=1
 	prices = tree.xpath('//span[@itemprop="price"]/text()')    
 	images = re.findall('.*src="(.+jpg)\".*',page.content)
-
-	print (items)
-
-
 
 	i = 0
 	for item in items: 
