@@ -60,9 +60,10 @@ def searchAliExpress(searchFor,num) :
 	URL = "https://www.aliexpress.com/wholesale?ltype=wholesale&d=y&origin=y&blanktest=0&SearchText=" + searchFor 
 	page = requests.get(URL)
 	tree = html.fromstring(page.content)
-	isRes =  tree.xpath('//strong[@class="search-count"]/text()')[0]
-	if int(isRes.replace(",", "")) == 0:
-		return Items;
+	#isRes = tree.xpath('//strong[@class="search-count"]/text()')[0]
+	#print (isRes)
+	#if int(isRes.replace(",", "")) == 0:
+	#	return Items;
 	Titles = tree.xpath('//a[@class="history-item product "]/@title')
 	itemsTmp = tree.xpath('//a[@class="history-item product "]/@href')
 	items = []
