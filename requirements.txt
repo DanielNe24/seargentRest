@@ -1,7 +1,6 @@
 flask
 python-amazon-simple-product-api
 requests
-json
+pypi-json
 random
 flask_cors
-lxml
