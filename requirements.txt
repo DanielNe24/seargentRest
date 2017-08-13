@@ -1,4 +1,5 @@
 flask
+setuptools
 python-amazon-simple-product-api
 requests
 json
